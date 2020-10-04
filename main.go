@@ -31,6 +31,8 @@ func main() {
 	go instanceLocker.SyncForever()
 
 	m := instanceLocker.NewLocker("isLeader", time.Second * 10)
+
+	// this can be run in a for loop to switch between instances forever
 	log.Info(ctx, "waiting")
 	m.Lock()
 	log.Info(ctx, "I am now the leader")

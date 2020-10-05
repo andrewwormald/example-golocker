@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/andrewwormald/golocker"
 	"github.com/corverroos/goku/client/logical"
-	"github.com/luno/jettison/log"
 )
 
 func main() {
@@ -27,16 +27,18 @@ func main() {
 	dbc.SetConnMaxLifetime(time.Second * 10)
 
 	cl := logical.New(dbc, dbc)
-	instanceLocker := golocker.New(ctx, "leader_election", dbc, cl)
-	go instanceLocker.SyncForever()
+	client := golocker.New(ctx, dbc, cl)
+	go client.SyncForever()
 
-	m := instanceLocker.NewLocker("isLeader", time.Second * 10)
+	m := client.NewLocker("isLeader", time.Second * 10)
 
 	// this can be run in a for loop to switch between instances forever
-	log.Info(ctx, "waiting")
-	m.Lock()
-	log.Info(ctx, "I am now the leader")
-	time.Sleep(time.Second * 5)
-	m.Unlock()
-	log.Info(ctx, "okay bye now")
+	for {
+		fmt.Println("waiting")
+		m.Lock()
+		fmt.Println("locked")
+		time.Sleep(time.Second * 5)
+		m.Unlock()
+		fmt.Println("unlocked")
+	}
 }
